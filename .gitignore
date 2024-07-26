@@ -1,5 +1,5 @@
 *.mp3
 *.mp4
-__pycache__
 *.txt
 *.md
+__pycache__

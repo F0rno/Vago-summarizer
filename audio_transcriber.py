@@ -1,4 +1,5 @@
 import whisper
+import os
 
 class AudioTranscriber:
 	def __init__(self, audio_path):
@@ -9,3 +10,6 @@ class AudioTranscriber:
 		result = self.model.transcribe(self.audio_path)
 		text = result["text"]
 		return text
+	
+	def check_if_audio_exists(self):
+		return os.path.exists(self.audio_path)
