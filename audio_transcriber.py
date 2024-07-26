@@ -8,5 +8,4 @@ class AudioTranscriber:
 	def transcribe(self):
 		result = self.model.transcribe(self.audio_path)
 		text = result["text"]
-		print("Transcribed Text:", text)
 		return text
