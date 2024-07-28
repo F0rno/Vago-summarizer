@@ -1,62 +1,89 @@
-from transformers import pipeline, AutoTokenizer
-from video_processor import VideoProcessor
-from audio_transcriber import AudioTranscriber
-from os.path import exists
+import logging
+import os
+import argparse
+from transformers import AutoTokenizer
 from api import OpenAIClient
-from os import environ
+from utils import (
+    setup_environment,
+    write_file,
+    split_transcript,
+    summarize_chunks,
+    extract_audio_if_needed,
+    transcribe_audio_if_needed
+)
 
-environ["TOKENIZERS_PARALLELISM"] = "false"
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
-def file_exists(file_path):
-    return exists(file_path)
-
-def split_transcript(transcript, max_length):
-    return [transcript[i:i+max_length] for i in range(0, len(transcript), max_length)]
-
-def summarize_chunks(chunks, system_prompt, api: OpenAIClient):
-    list = []
-    for chunk in chunks:
-        list.append(api.call_llm(chunk, system_prompt))
-    return list
-
-def summarize(video_path):
+def summarize(video_path, config):
+    setup_environment()
+    
+    # Create directories for transcriptions and summaries if they don't exist
+    os.makedirs("transcriptions", exist_ok=True)
+    os.makedirs("summaries", exist_ok=True)
+    
     audio_path = video_path.replace("videos/", "audios/").replace(".mp4", ".mp3")
     file_name = video_path.split("/")[-1].replace(".mp4", "")
-    if not file_exists(audio_path):
-        # Creates a file with the audio extracted from the video
-        VideoProcessor(video_path, audio_path).extract_audio()
-    transcript = ""
-    if not file_exists(f"{file_name}-transcript.txt"):
-        transcript = AudioTranscriber(audio_path).transcribe()
-        # Save the transcript to a file
-        with open(f"{file_name}-transcript.txt", "w") as transcript_file:
-            transcript_file.write(transcript)
-    else:
-        with open(f"{file_name}-transcript.txt", "r") as transcript_file:
-            transcript = transcript_file.read()
-    print("Loading the model...")
-    system_prompt = """
-    Forma this transcript into a summary of the video using markdown for notes. Only prompt the formated text, nothing more:\n\n
-    """.strip()
-    api = OpenAIClient(base_url="http://192.168.0.11:1234/v1", api_key="lm-studio")
-    print("Splitting the transcript into chunks and summarizing...")
+    transcript_path = f"transcriptions/{file_name}-transcript.txt"
+    summary_path = f"summaries/{file_name}-summary.md"
 
-    # Calculate the length of the system prompt in tokens
+    extract_audio_if_needed(video_path, audio_path)
+    transcript = transcribe_audio_if_needed(audio_path, transcript_path)
+
+    logging.info("Loading the model...")
     tokenizer = AutoTokenizer.from_pretrained("t5-small")
-    prompt_length = len(tokenizer.tokenize(system_prompt))
+    prompt_length = len(tokenizer.tokenize(config['system_prompt']))
+    max_chunk_length = config['context_window'] - prompt_length
 
-    # Subtract the prompt length from the context window
-    context_window = 4000
-    max_chunk_length = context_window - prompt_length
-
+    logging.info("Splitting the transcript into chunks and summarizing...")
     chunks = split_transcript(transcript, max_chunk_length)
-    print("Summarizing...")
-    summaries = summarize_chunks(chunks, system_prompt, api)
-    
-    print("Writing the summaries to a file...")
-    with open(f"{file_name}-summary.md", "w") as summary_file:
-        summary_file.write("\n".join(summaries))
+    api = OpenAIClient(base_url=config['api_base_url'], api_key=config['api_key'])
+    summaries = summarize_chunks(chunks, config['system_prompt'], api)
+
+    logging.info("Writing the summaries to a file...")
+    write_file(summary_path, "\n".join(summaries))
 
 if __name__ == "__main__":
-    video_path = "videos/index.mp4"
-    summarize(video_path)
+    parser = argparse.ArgumentParser(description="Process video and audio files.")
+    parser.add_argument(
+        "--video-path",
+        # TODO: Remove this
+        default="videos/index.mp4",
+        type=str, 
+        help="Path to the video file."
+    )
+    parser.add_argument(
+        "--context-window", 
+        type=int, 
+        default=4000, 
+        help="Context window size for processing."
+    )
+    parser.add_argument(
+        "--system-prompt", 
+        type=str, 
+        default="""Forma this transcript into a summary of the video using markdown for notes. Only prompt the formated text, nothing more:\n\n""", 
+        help="System prompt for summarization."
+    )
+    parser.add_argument(
+        "--api-base-url", 
+        type=str, 
+        default="http://192.168.0.11:1234/v1", 
+        help="Base URL for the API."
+    )
+    parser.add_argument(
+        "--api-key", 
+        type=str, 
+        default="lm-studio", 
+        help="API key for authentication."
+    )
+    
+    args = parser.parse_args()
+
+    config = {
+        'context_window': args.context_window,
+        'system_prompt': args.system_prompt,
+        'api_base_url': args.api_base_url,
+        'api_key': args.api_key
+    }
+
+    summarize(args.video_path, config)
