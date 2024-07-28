@@ -7,9 +7,7 @@ class AudioTranscriber:
 		self.model = whisper.load_model("base")
 
 	def transcribe(self):
+		print(f"Transcribing {self.audio_path}...")
 		result = self.model.transcribe(self.audio_path)
 		text = result["text"]
 		return text
-	
-	def check_if_audio_exists(self):
-		return os.path.exists(self.audio_path)
