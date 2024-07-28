@@ -12,6 +12,8 @@ from utils import (
     transcribe_audio_if_needed
 )
 
+# TODO: If the video is from youtube use the transcript from youtube to toake time stamps
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
@@ -55,13 +57,22 @@ if __name__ == "__main__":
     parser.add_argument(
         "--context-window", 
         type=int, 
-        default=4000, 
+        default=64000, 
         help="Context window size for processing."
     )
     parser.add_argument(
         "--system-prompt", 
         type=str, 
-        default="""Forma this transcript into a summary of the video using markdown for notes. Only prompt the formated text, nothing more:\n\n""", 
+        default="""
+            You are an advanced AI assistant trained to convert video transcriptions into concise, well-structured Markdown notes. Your task is to take any given text, identify the essence, extract key points, and format it appropriately in Markdown. Here’s a guideline on how to format the notes naturally:
+
+            Title: Use the video title or main idea as the main heading.
+            Sections and Subpoints: Organize the content into logical sections with level-2 headings and break down each section into bullet points, highlighting key ideas, important details, and notable quotes.
+            Special Moments: Preserve and highlight any special moments or valued conversations that add significant value, even if they are casual interactions.
+            Code and Quotes: Use backticks for code snippets and blockquotes for any notable quotes.
+            Links: If any URLs or references are mentioned, format them as Markdown links.
+            Ensure that the notes feel natural and coherent, adapted to the subject.
+        """.strip(), 
         help="System prompt for summarization."
     )
     parser.add_argument(
