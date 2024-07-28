@@ -1,20 +1,23 @@
-from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import pipeline, AutoTokenizer
 from video_processor import VideoProcessor
 from audio_transcriber import AudioTranscriber
-from datasets import Dataset
 from os.path import exists
-import torch
+from api import OpenAIClient
+from os import environ
+
+environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def file_exists(file_path):
     return exists(file_path)
 
-def split_transcript(transcript, max_length=1024):
+def split_transcript(transcript, max_length):
     return [transcript[i:i+max_length] for i in range(0, len(transcript), max_length)]
 
-def summarize_chunks(chunks, summarizer):
-    dataset = Dataset.from_dict({"text": chunks})
-    summaries = summarizer(dataset["text"], max_length=130, min_length=30, do_sample=False, batch_size=2)  # Reduced batch size
-    return [summary['summary_text'] for summary in summaries]
+def summarize_chunks(chunks, system_prompt, api: OpenAIClient):
+    list = []
+    for chunk in chunks:
+        list.append(api.call_llm(chunk, system_prompt))
+    return list
 
 def summarize(video_path):
     audio_path = video_path.replace("videos/", "audios/").replace(".mp4", ".mp3")
@@ -31,30 +34,29 @@ def summarize(video_path):
     else:
         with open(f"{file_name}-transcript.txt", "r") as transcript_file:
             transcript = transcript_file.read()
-    ############################################################
-    # Summarization model
-    ############################################################
     print("Loading the model...")
-    model_name = "facebook/bart-large-cnn"
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    
-    try:
-        print("Using GPU...")
-        summarizer = pipeline("summarization", model=model, tokenizer=tokenizer, device=0)  # Use GPU
-    except torch.cuda.OutOfMemoryError:
-        print("CUDA out of memory. Switching to CPU...")
-        summarizer = pipeline("summarization", model=model, tokenizer=tokenizer, device=-1)  # Use CPU
-
+    system_prompt = """
+    Forma this transcript into a summary of the video using markdown for notes. Only prompt the formated text, nothing more:\n\n
+    """.strip()
+    api = OpenAIClient(base_url="http://192.168.0.11:1234/v1", api_key="lm-studio")
     print("Splitting the transcript into chunks and summarizing...")
-    chunks = split_transcript(transcript)
+
+    # Calculate the length of the system prompt in tokens
+    tokenizer = AutoTokenizer.from_pretrained("t5-small")
+    prompt_length = len(tokenizer.tokenize(system_prompt))
+
+    # Subtract the prompt length from the context window
+    context_window = 4000
+    max_chunk_length = context_window - prompt_length
+
+    chunks = split_transcript(transcript, max_chunk_length)
     print("Summarizing...")
-    summaries = summarize_chunks(chunks, summarizer)
+    summaries = summarize_chunks(chunks, system_prompt, api)
     
     print("Writing the summaries to a file...")
     with open(f"{file_name}-summary.md", "w") as summary_file:
         summary_file.write("\n".join(summaries))
 
 if __name__ == "__main__":
-    video_path = "videos/adrian.mp4"
+    video_path = "videos/index.mp4"
     summarize(video_path)
