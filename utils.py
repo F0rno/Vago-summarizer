@@ -38,6 +38,9 @@ def write_file(file_path, content):
         logging.error(f"Error writing to file {file_path}: {e}")
 
 def split_transcript(transcript, max_length):
+    # TODO: This spliter is bad implemented because max_length is the len of tokes
+    # not normal text
+    # TODO: Add a parameter to determine the lm and select an acurate tokenizer
     return [transcript[i:i+max_length] for i in range(0, len(transcript), max_length)]
 
 def summarize_chunks(chunks, system_prompt, api: OpenAIClient):
