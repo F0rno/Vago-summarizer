@@ -9,4 +9,3 @@ class VideoProcessor:
 		video = mp.VideoFileClip(self.video_path)
 		audio = video.audio
 		audio.write_audiofile(self.output_audio_path)
-		print(f"Audio extracted and saved to {self.output_audio_path}")

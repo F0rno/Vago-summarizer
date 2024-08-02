@@ -1,7 +1,7 @@
 import requests
 
 class OllamaClient:
-    def __init__(self, base_url, api_key, model="llama3.1"):
+    def __init__(self, base_url, api_key, model="myllama3.1"):
         self.base_url = base_url
         self.api_key = api_key
         self.model = model
@@ -16,7 +16,6 @@ class OllamaClient:
             "prompt": prompt,
             "system": system_prompt,
             "temperature": temperature,
-            "eval_count": 2_000, # 2k tokens for the response
             "stream": False
         }
         response = requests.post(f"{self.base_url}/api/generate", json=data, headers=headers)
