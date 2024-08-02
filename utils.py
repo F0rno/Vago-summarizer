@@ -4,7 +4,7 @@ from os.path import exists
 from os import environ
 from video_processor import VideoProcessor
 from audio_transcriber import AudioTranscriber
-from api import OpenAIClient
+from api import OllamaClient
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -43,8 +43,12 @@ def split_transcript(transcript, max_length):
     # TODO: Add a parameter to determine the lm and select an acurate tokenizer
     return [transcript[i:i+max_length] for i in range(0, len(transcript), max_length)]
 
-def summarize_chunks(chunks, system_prompt, api: OpenAIClient):
-    return [api.call_llm(chunk, system_prompt) for chunk in chunks]
+def summarize_chunks(chunks, system_prompt, api: OllamaClient):
+    results = []
+    for chunk in chunks:
+        result = api.call_llm(chunk, system_prompt)
+        results.append(result)
+    return results
 
 def extract_audio_if_needed(video_path, audio_path):
     if not file_exists(audio_path):

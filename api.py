@@ -1,21 +1,24 @@
-from openai import OpenAI
-from enum import Enum
+import requests
 
-class Model(Enum):
-    LLAMA_3_8B = "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF"
-    LLAMA_3_1_8B = "lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF"
+class OllamaClient:
+    def __init__(self, base_url, api_key, model="llama3.1"):
+        self.base_url = base_url
+        self.api_key = api_key
+        self.model = model
 
-class OpenAIClient:
-    def __init__(self, base_url, api_key):
-        self.client = OpenAI(base_url=base_url, api_key=api_key)
-
-    def call_llm(self, prompt, system_prompt, model=Model.LLAMA_3_1_8B, temperature=0.7):
-        completion = self.client.chat.completions.create(
-            model=model.value,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=temperature,
-        )
-        return completion.choices[0].message.content
+    def call_llm(self, prompt, system_prompt, temperature=0.7):
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        data = {
+            "model": self.model,
+            "prompt": prompt,
+            "system": system_prompt,
+            "temperature": temperature,
+            "eval_count": 2_000, # 2k tokens for the response
+            "stream": False
+        }
+        response = requests.post(f"{self.base_url}/api/generate", json=data, headers=headers)
+        response.raise_for_status()
+        return response.json()["response"]
