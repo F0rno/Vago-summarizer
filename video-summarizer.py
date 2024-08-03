@@ -1,5 +1,5 @@
 import logging
-import os
+from os import remove
 import argparse
 from api import OllamaClient
 from utils import (
@@ -15,9 +15,9 @@ from utils import (
 def summarize(video_path, config):
     setup_environment(config)
     
-    audio_path = f"audios/{video_path.split("/")[-1].replace(".mp4", ".mp3")}"
     file_name = video_path.split("/")[-1].replace(".mp4", "")
-    transcript_path = f"transcriptions/{file_name}-transcript.txt"
+    audio_path = f"audios/{file_name}.mp3"
+    transcript_path = f"transcriptions/{file_name}.transcript.txt"
     summary_path = f"{config['output_path']}{file_name}.summary.md"
 
     extract_audio_if_needed(video_path, audio_path)
@@ -29,6 +29,13 @@ def summarize(video_path, config):
 
     logging.info("Writing the summaries to a file...")
     write_file(summary_path, summaries)
+
+    logging.info(f"Summarized notes saved to {summary_path}")
+
+    logging.info("Cleaning cache files from this iteration...")
+    if config['purge_cache']:
+        remove(audio_path)
+        remove(transcript_path)
 
 if __name__ == "__main__":
     DEFAULT_SYSTEM_PROMPT = """
@@ -58,7 +65,7 @@ if __name__ == "__main__":
         "--output-path",
         type=str,
         default=DEFAULT_OUTPUT_PATH,
-        help="Path to the summary file.",
+        help="Path for the summary file.",
         required=False
     )
     parser.add_argument(
@@ -80,9 +87,13 @@ if __name__ == "__main__":
         help="API key for authentication."
     )
     parser.add_argument(
-        "--purge-cache", 
-        type=bool, 
-        default=False, 
+        "--no-cache", 
+        action="store_true",
+        help="Do not save intermediate files slowing down the summary iteration."
+    )
+    parser.add_argument(
+        "--purge-all-cache", 
+        action="store_true",
         help="Delete all the intermediate files."
     )
     parser.add_argument(
@@ -99,7 +110,8 @@ if __name__ == "__main__":
         'system_prompt': args.system_prompt,
         'api_base_url': args.api_base_url,
         'api_key': args.api_key,
-        'purge_cache': args.purge_cache,
+        'purge_cache': args.no_cache,
+        'purge_all_cache': args.purge_all_cache,
         'info': args.info
     }
 
