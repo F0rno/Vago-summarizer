@@ -1,7 +1,7 @@
 import requests
 
 class OllamaClient:
-    def __init__(self, base_url, api_key, model="myllama3.1"):
+    def __init__(self, base_url, api_key, model="20kllama3.1"):
         self.base_url = base_url
         self.api_key = api_key
         self.model = model

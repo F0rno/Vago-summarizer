@@ -1,15 +1,26 @@
 import logging
-from os.path import exists
-from os import environ
+from os.path import exists, join, isfile
+from os import makedirs, listdir, unlink
 from video_processor import VideoProcessor
 from audio_transcriber import AudioTranscriber
 from api import OllamaClient
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-def setup_environment():
-    environ["TOKENIZERS_PARALLELISM"] = "false"
+def setup_environment(config):
+    if (config['purge_cache']):
+        # Remove all cached files
+        for folder in ["transcriptions", "summaries", "audios"]:
+            for file in listdir(folder):
+                file_path = join(folder, file)
+                try:
+                    if isfile(file_path):
+                        unlink(file_path)
+                except Exception as e:
+                    logging.error(f"Error deleting file {file_path}: {e}")
+    else:
+        # Create directories for transcriptions and summaries for caching
+        makedirs("transcriptions", exist_ok=True)
+        makedirs("summaries", exist_ok=True)
+        makedirs("audios", exist_ok=True)
 
 def file_exists(file_path):
     return exists(file_path)
@@ -28,7 +39,7 @@ def write_file(file_path, content):
     except IOError as e:
         logging.error(f"Error writing to file {file_path}: {e}")
 
-def summarize_chunks(prompt, system_prompt, api: OllamaClient):
+def summarize_with_llm(prompt, system_prompt, api: OllamaClient):
     return api.call_llm(prompt, system_prompt)
 
 def extract_audio_if_needed(video_path, audio_path):
