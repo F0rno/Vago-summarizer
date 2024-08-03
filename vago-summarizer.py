@@ -1,5 +1,5 @@
 """
-Video Summarizer
+Vago Summarizer
 
 Author: Pablo Fornell
 Contact: pablo.fornell.contacto@gmail.com

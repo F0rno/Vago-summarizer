@@ -1,3 +1,5 @@
+<p align="center"><a href="" target="_blank"><img src="./assets/vs.png" width="400" alt="Vago logo"></a></p>
+
 # Vago Summarizer
 
 Vago Summarizer is a Python-based application that processes video files to generate markdown summaries. It uses the [ollama API](https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion) to access local llms to summarize videos into markdown format.
