@@ -1,3 +1,11 @@
+"""
+Video Summarizer
+
+Author: Pablo Fornell
+Contact: pablo.fornell.contacto@gmail.com
+Nickname: F0rno
+"""
+
 import logging
 from os import remove
 import argparse
