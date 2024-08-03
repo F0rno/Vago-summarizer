@@ -1,4 +1,4 @@
-# XD
-sudo apt install ffmpeg
-whisper
-moviepy
+# sudo apt install ffmpeg
+openai-whisper==20231117
+moviepy==1.0.3
+tiktoken==0.7.0
