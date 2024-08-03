@@ -145,10 +145,10 @@ if __name__ == "__main__":
     if args.info:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
-    # TODO: Add the systemprompt to the calculation
     if args.tool_mode:
         if args.tool_count_tokens_from_file is not None:
-            print(f"The file {args.tool_count_tokens_from_file} has {count_tokens_in_file(args.tool_count_tokens_from_file)} tokens")
+            file_tokes, system_prompt_tokens = count_tokens_in_file(args.tool_count_tokens_from_file, args.system_prompt)
+            print(f"The file {args.tool_count_tokens_from_file} has {file_tokes} tokens, with your system prompt you would need {file_tokes + system_prompt_tokens} tokens")
         if args.tool_N_chars_to_tokens is not None:
             print(f"With {args.tool_N_chars_to_tokens} characteres you would need {tokens_of_n_characters(args.tool_N_chars_to_tokens)} tokens in your context window")
     else:
