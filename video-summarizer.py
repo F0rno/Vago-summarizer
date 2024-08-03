@@ -88,7 +88,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model", 
         type=str, 
-        default="20kllama3.1", 
+        default="llama3.1", 
         help="Model name of the API, example llama3.1"
     )
     parser.add_argument(
@@ -150,6 +150,6 @@ if __name__ == "__main__":
             file_tokes, system_prompt_tokens = count_tokens_in_file(args.tool_count_tokens_from_file, args.system_prompt)
             print(f"The file {args.tool_count_tokens_from_file} has {file_tokes} tokens, with your system prompt you would need {file_tokes + system_prompt_tokens} tokens")
         if args.tool_N_chars_to_tokens is not None:
-            print(f"With {args.tool_N_chars_to_tokens} characteres you would need {tokens_of_n_characters(args.tool_N_chars_to_tokens)} tokens in your context window")
+            print(f"With {args.tool_N_chars_to_tokens} characters you would need {tokens_of_n_characters(args.tool_N_chars_to_tokens)} tokens in your context window")
     else:
         summarize(args.video_path, config)
