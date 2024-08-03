@@ -6,9 +6,9 @@ from audio_transcriber import AudioTranscriber
 from api import OllamaClient
 
 def setup_environment(config):
-    if (config['purge_cache']):
+    if (config['purge_all_cache']):
         # Remove all cached files
-        for folder in ["transcriptions", "summaries", "audios"]:
+        for folder in ["transcriptions", "audios"]:
             for file in listdir(folder):
                 file_path = join(folder, file)
                 try:
@@ -19,7 +19,6 @@ def setup_environment(config):
     else:
         # Create directories for transcriptions and summaries for caching
         makedirs("transcriptions", exist_ok=True)
-        makedirs("summaries", exist_ok=True)
         makedirs("audios", exist_ok=True)
 
 def file_exists(file_path):
