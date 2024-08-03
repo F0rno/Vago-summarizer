@@ -1,7 +1,4 @@
 # sudo apt install ffmpeg
-# conda create --name video-summarizer python=3.8 -y
-# conda activate video-summarizer
-# pip install -r requirements.txt
 openai-whisper==20231117
 moviepy==1.0.3
 tiktoken==0.7.0
