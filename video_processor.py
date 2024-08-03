@@ -1,3 +1,4 @@
+import logging
 import moviepy.editor as mp
 
 class VideoProcessor:
@@ -5,7 +6,8 @@ class VideoProcessor:
 		self.video_path = video_path
 		self.output_audio_path = output_audio_path
 
-	def extract_audio(self):	
+	def extract_audio(self):
+		
 		video = mp.VideoFileClip(self.video_path)
 		audio = video.audio
 		audio.write_audiofile(self.output_audio_path)
