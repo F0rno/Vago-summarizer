@@ -65,16 +65,16 @@ This is a large class, and we encourage you to form study groups to consult each
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/your-username/video-summarizer.git
+   git clone https://github.com/your-username/vago-summarizer.git
    ```
 2. Navigate to the project directory:
    ```sh
-   cd video-summarizer
+   cd vago-summarizer
    ```
 3. Create a Python environment (optional) and install the requirements
    ```sh
-   conda create --name video-summarizer python=3.8 -y
-   conda activate video-summarizer
+   conda create --name vago-summarizer python=3.8 -y
+   conda activate vago-summarizer
    pip install -r requirements.txt
    ```
 
@@ -83,7 +83,7 @@ This is a large class, and we encourage you to form study groups to consult each
 To summarize a video, run the following command:
 
 ```sh
-python video-summarizer.py --input /path/to/video/file --output /path/to/output/file --info
+python3 vago-summarizer.py --input /path/to/video/file --output /path/to/output/file --info
 ```
 
 ### Additional Options
