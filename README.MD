@@ -84,7 +84,7 @@ This is a large class, and we encourage you to form study groups to consult each
 To summarize a video, run the following command:
 
 ```sh
-python3 vago-summarizer.py --input /path/to/video/file --api-base-url http://localhost:1234  --info
+python3 vago-summarizer.py --input /path/to/video/file --api-base-url http://localhost:1234 --info
 ```
 
 ### Command Line Arguments
