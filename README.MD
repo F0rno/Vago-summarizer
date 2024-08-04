@@ -2,7 +2,7 @@
 
 # Vago Summarizer
 
-Vago Summarizer is a Python-based application that processes video files to generate markdown summaries. It uses the [ollama API](https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion) to access local llms to summarize videos into markdown format.
+Vago Summarizer is a Python-based application that processes video files to generate markdown summaries. It uses the [ollama API](https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion) or [LM Studio AP](https://lmstudio.ai/)I to access local llms to summarize videos into markdown format.
 
 ## Example
 
@@ -60,6 +60,7 @@ This is a large class, and we encourage you to form study groups to consult each
 - Generates transcriptions from extracted audio
 - Generates summaries from the audio transcriptions
 - Local LLMs by the Ollama API
+- LM Studio API support
 
 ## Installation
 
@@ -83,17 +84,20 @@ This is a large class, and we encourage you to form study groups to consult each
 To summarize a video, run the following command:
 
 ```sh
-python3 vago-summarizer.py --input /path/to/video/file --output /path/to/output/file --info
+python3 vago-summarizer.py --input /path/to/video/file --api-base-url http://localhost:1234  --info
 ```
 
-### Additional Options
+### Command Line Arguments
 
-+ --output-path: Specify the path for the summary file (default is ./).
-+ --system-prompt: Custom system prompt for summarization.
-+ --model: Specify the model name of the API (default is llama3.1).
-+ --no-cache: Do not save intermediate files, slowing down the summary iteration.
-+ --purge-all-cache: Delete all the intermediate files.
-+ --info: Print logs.
-+ --tool-mode: The program will not summarize the video but will let you use tool parameters.
-+ --tool-count-tokens-from-file: Requires --tool-mode flag. Tells you how many tokens a file has plus your system prompt to know if it is too long for your model.
-+ --tool-N-chars-to-tokens: Requires --tool-mode flag. Output the number of tokens equivalent to the number of characters inputted.
+- `--video-path` (required): Path to the video file.
+- `--output-path` (optional): Path for the summary file.
+- `--system-prompt` (optional): System prompt for summarization.
+- `--api-base-url` (required): Base URL for the ollama API.
+- `--api-key` (optional, default: `lm-studio`): API key for authentication.
+- `--model` (optional, default: `llama3.1`): Model name of the API, example `llama3.1`.
+- `--no-cache` (optional): Do not save intermediate files, slowing down the summary iteration.
+- `--purge-all-cache` (optional): Delete all the intermediate files.
+- `--info` (optional): Print logs.
+- `--tool-mode` (optional): The program will not summarize the video, but will let you use tool parameters like `--tool-count-tokens-from-file`.
+- `--tool-count-tokens-from-file` (optional): Requires `--tool-mode` flag. Tells you how many tokens a file has plus your system prompt to know if it is too long for your model.
+- `--tool-N-chars-to-tokens` (optional): Requires `--tool-mode` flag. Output the number of tokens equivalent to the number of characters inputted.

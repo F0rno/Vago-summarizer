@@ -84,7 +84,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--api-base-url", 
         type=str,
-        help="Base URL for the API.",
+        help="Base URL for the ollama API.",
         required=True
     )
     parser.add_argument(
