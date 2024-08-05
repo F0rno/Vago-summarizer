@@ -15,11 +15,33 @@ from utils import (
     write_file,
     summarize_with_llm,
     extract_audio_if_needed,
-    transcribe_audio_if_needed
+    transcribe_audio_if_needed,
+    read_file
 )
 from tools import *
+from youtube import extract_video_id, download_transcript
 
-def summarize(video_path, config):
+def summarize_youtube(video_url, config):
+    setup_environment(config)
+    
+    video_id = extract_video_id(video_url)
+    transcript_path = f"transcriptions/{video_id}.transcript.txt"
+    summary_path = f"{config['output_path']}{video_id}.md"
+
+    logging.info("Downloading the transcript...")
+    download_transcript(video_url)
+
+    transcript = read_file(transcript_path)
+
+    logging.info("Sending and summarizing the transcript...")
+    api = OllamaClient(base_url=config['api_base_url'], api_key=config['api_key'], model=config['model'])
+    summary = summarize_with_llm(transcript, config['system_prompt'], api)
+
+    logging.info("Writing the summary to a file...")
+    write_file(summary_path, summary)
+
+
+def summarize_local_video(video_path, config):
     setup_environment(config)
     
     file_name = video_path.split("/")[-1].replace(".mp4", "")
@@ -62,10 +84,16 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description="Process video and audio files.")
     parser.add_argument(
+        "--video-url",
+        type=str, 
+        default=None,
+        help="Url to the YouTube video.",
+    )
+    parser.add_argument(
         "--video-path",
         type=str, 
+        default=None,
         help="Path to the video file.",
-        required=True
     )
     parser.add_argument(
         "--output-path",
@@ -138,6 +166,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = {
+        'video_url': args.video_url,
         'video_path': args.video_path,
         'output_path': args.output_path,
         'system_prompt': args.system_prompt,
@@ -158,5 +187,10 @@ if __name__ == "__main__":
             print(f"The file {args.tool_count_tokens_from_file} has {file_tokes} tokens, with your system prompt you would need {file_tokes + system_prompt_tokens} tokens")
         if args.tool_N_chars_to_tokens is not None:
             print(f"With {args.tool_N_chars_to_tokens} characters you would need {tokens_of_n_characters(args.tool_N_chars_to_tokens)} tokens in your context window")
-    else:
-        summarize(args.video_path, config)
+        exit(0)
+
+    if args.video_url:
+        summarize_youtube(args.video_url, config)
+
+    if args.video_path:
+        summarize_local_video(args.video_path, config)
