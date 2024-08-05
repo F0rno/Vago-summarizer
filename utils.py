@@ -17,7 +17,7 @@ def setup_environment(config):
                 except Exception as e:
                     logging.error(f"Error deleting file {file_path}: {e}")
     else:
-        # Create directories for transcriptions and summaries for caching
+        # Cache dirs
         makedirs("transcriptions", exist_ok=True)
         makedirs("audios", exist_ok=True)
 
