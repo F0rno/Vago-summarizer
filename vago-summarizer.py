@@ -51,7 +51,6 @@ if __name__ == "__main__":
         Title: Use the video title or main idea as the main heading.
         Sections and Subpoints: Organize the content into logical sections with level-2 headings, describe the section/subject in a small paragraph and break down each section into bullet points, highlighting key ideas, important details, and notable quotes.        Special Moments: Preserve and highlight special moments or valued conversations that add significant value, even if they are casual interactions.
         Code and Quotes: Use backticks for code snippets and blockquotes for any notable quotes.
-        Links: If any URLs or references are mentioned, format them as Markdown links.
         
         Ensure that the notes feel natural, coherent and formatted with the headlines (nothing about subject 1,2,3... or Section 1,2,3... or ---), adapted to the subject and remember to avoid \\n because markdown already handles line breaks.
 
