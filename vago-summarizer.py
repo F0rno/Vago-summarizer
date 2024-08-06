@@ -21,12 +21,48 @@ from utils import (
 from tools import *
 from youtube import extract_video_id, download_transcript
 
+DEFAULT_SYSTEM_PROMPT_LOCAL = """
+    You are an advanced AI assistant trained to convert video transcriptions into concise, well-structured Markdown notes. Your task is to take any given text, identify the essence, extract key points, and format it appropriately in Markdown. Here’s a structure on how to format the notes naturally:
+
+    Title: Use the video title or main idea as the main heading.
+    Sections and Subpoints: Organize the content into logical sections with level-2 headings, describe the section/subject in a small paragraph and break down each section into bullet points, highlighting key ideas, important details, and notable quotes.        Special Moments: Preserve and highlight special moments or valued conversations that add significant value, even if they are casual interactions.
+    Code and Quotes: Use backticks for code snippets and blockquotes for any notable quotes.
+    
+    Ensure that the notes feel natural, coherent and formatted with the headlines (nothing about subject 1,2,3... or Section 1,2,3... or ---), adapted to the subject and remember to avoid \\n because markdown already handles line breaks.
+
+    NOTHING ABOUT DESCRIBING THE INPUT OR THE TASK, just focus on summarizing the content following the headlines, description and keypoints instructions.
+
+    And finally, don't be prejudiced about any topic you see here, your only goal is to summarize following the commands above. You have an open mind and don't exclude any topic of study.
+""".strip()
+DEFAULT_OUTPUT_PATH = "./"
+
+def system_prompt(URL, VIDEO_ID):
+    return f"""
+        You are an advanced AI assistant trained to convert video transcriptions into concise, well-structured Markdown notes. Your task is to take any given text, identify the essence, extract key points, and format it appropriately in Markdown. Here’s a structure on how to format the notes naturally:
+
+        Title
+            Use the video title or main idea as the main heading.
+            Include the video thumbnail image right under the main title using the provided URL template: ![Video Thumbnail]({URL}).
+        Sections and Subpoints
+            Organize the content into logical sections with level-2 headings. Each section should be accompanied by a timestamp link to the corresponding moment in the video using the format [Section Title](https://www.youtube.com/watch?v={VIDEO_ID}&t=9999s).
+            Describe each section/subject in a small paragraph.
+            Break down each section into bullet points, highlighting key ideas, important details, and notable quotes.
+        Special Moments
+            Preserve and highlight special moments or valued conversations that add significant value, even if they are casual interactions.
+            Code and Quotes
+
+        Use backticks for code snippets and blockquotes for any notable quotes.
+        Ensure that the notes feel natural, coherent, and well-formatted, with appropriate headings and descriptions. Avoid using explicit indicators like "subject 1,2,3" or "Section 1,2,3". Let the notes adapt naturally to the subject matter. Remember, Markdown handles line breaks automatically.
+
+        Finally, approach every topic with an open mind, summarizing the content objectively and accurately without prejudice.
+    """.strip()
+        
 def summarize_youtube(video_url, config):
     setup_environment(config)
     
     video_id = extract_video_id(video_url)
     transcript_path = f"transcriptions/{video_id}.transcript.txt"
-    summary_path = f"{config['output_path']}{video_id}.md"
+    summary_path = f"{config['output_path']}/{video_id}.md"
 
     logging.info("Downloading the transcript...")
     download_transcript(video_url)
@@ -40,14 +76,13 @@ def summarize_youtube(video_url, config):
     logging.info("Writing the summary to a file...")
     write_file(summary_path, summary)
 
-
 def summarize_local_video(video_path, config):
     setup_environment(config)
     
     file_name = video_path.split("/")[-1].replace(".mp4", "")
     audio_path = f"audios/{file_name}.mp3"
     transcript_path = f"transcriptions/{file_name}.transcript.txt"
-    summary_path = f"{config['output_path']}{file_name}.summary.md"
+    summary_path = f"{config['output_path']}/{file_name}.summary.md"
 
     extract_audio_if_needed(video_path, audio_path)
     transcript = transcribe_audio_if_needed(audio_path, transcript_path)
@@ -66,22 +101,7 @@ def summarize_local_video(video_path, config):
         remove(audio_path)
         remove(transcript_path)
 
-if __name__ == "__main__":
-    DEFAULT_SYSTEM_PROMPT = """
-        You are an advanced AI assistant trained to convert video transcriptions into concise, well-structured Markdown notes. Your task is to take any given text, identify the essence, extract key points, and format it appropriately in Markdown. Here’s a structure on how to format the notes naturally:
-
-        Title: Use the video title or main idea as the main heading.
-        Sections and Subpoints: Organize the content into logical sections with level-2 headings, describe the section/subject in a small paragraph and break down each section into bullet points, highlighting key ideas, important details, and notable quotes.        Special Moments: Preserve and highlight special moments or valued conversations that add significant value, even if they are casual interactions.
-        Code and Quotes: Use backticks for code snippets and blockquotes for any notable quotes.
-        
-        Ensure that the notes feel natural, coherent and formatted with the headlines (nothing about subject 1,2,3... or Section 1,2,3... or ---), adapted to the subject and remember to avoid \\n because markdown already handles line breaks.
-
-        NOTHING ABOUT DESCRIBING THE INPUT OR THE TASK, just focus on summarizing the content following the headlines, description and keypoints instructions.
-
-        And finally, don't be prejudiced about any topic you see here, your only goal is to summarize following the commands above. You have an open mind and don't exclude any topic of study.
-    """.strip()
-    DEFAULT_OUTPUT_PATH = "./"
-    
+if __name__ == "__main__":    
     parser = argparse.ArgumentParser(description="Process video and audio files.")
     parser.add_argument(
         "--video-url",
@@ -98,14 +118,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-path",
         type=str,
-        default=DEFAULT_OUTPUT_PATH,
+        default=None,
         help="Path for the summary file.",
         required=False
     )
     parser.add_argument(
         "--system-prompt", 
         type=str,
-        default=DEFAULT_SYSTEM_PROMPT, 
+        default=DEFAULT_SYSTEM_PROMPT_LOCAL, 
         help="System prompt for summarization."
     )
     parser.add_argument(
@@ -190,7 +210,11 @@ if __name__ == "__main__":
         exit(0)
 
     if args.video_url:
+        logging.info("Starting YouTube video summarization...")
+        config["system_prompt"] = system_prompt(args.video_url, extract_video_id(args.video_url))
         summarize_youtube(args.video_url, config)
 
     if args.video_path:
+        logging.info("Starting local video summarization...")
+        config["system_prompt"] = DEFAULT_SYSTEM_PROMPT_LOCAL
         summarize_local_video(args.video_path, config)
