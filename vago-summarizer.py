@@ -37,6 +37,7 @@ DEFAULT_SYSTEM_PROMPT_LOCAL = """
 DEFAULT_OUTPUT_PATH = "./"
 
 def system_prompt(URL, VIDEO_ID):
+    # TODO: Implement the logic to get the url to the video thumbnail
     return f"""
         You are an advanced AI assistant trained to convert video transcriptions into concise, well-structured Markdown notes. Your task is to take any given text, identify the essence, extract key points, and format it appropriately in Markdown. Here’s a structure on how to format the notes naturally:
 
