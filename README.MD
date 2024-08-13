@@ -86,6 +86,7 @@ python3 vago-summarizer.py --input /path/to/video/file --api-base-url http://loc
 
 ### Command Line Arguments
 
+- `--video-url` (required): URL to the youtube video.
 - `--video-path` (required): Path to the video file.
 - `--output-path` (optional): Path for the summary file.
 - `--system-prompt` (optional): System prompt for summarization.
