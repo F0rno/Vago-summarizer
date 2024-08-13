@@ -118,7 +118,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-path",
         type=str,
-        default=None,
+        default="./",
         help="Path for the summary file.",
         required=False
     )

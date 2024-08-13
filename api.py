@@ -28,6 +28,8 @@ class OllamaClient:
             logging.info("Connection error. Please check your network and try again.")
             exit(1)
         except requests.exceptions.HTTPError as http_err:
-            return {"error": f"HTTP error occurred: {http_err}"}
+            logging.error(f"HTTP error occurred: {http_err}")
+            exit(1)
         except Exception as err:
-            return {"error": f"An error occurred: {err}"}
+            logging.error(f"An error occurred: {err}")
+            exit(1)
