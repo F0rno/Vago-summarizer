@@ -24,6 +24,11 @@ def download_transcript(video_url):
     except Exception as e:
         logging.error(f"An error occurred: {e}")
 
+def get_miniature_url(video_url):
+    video_id = extract_video_id(video_url)
+    return f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+
 if __name__ == "__main__":
-    video_url = ''
+    video_url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     download_transcript(video_url)
+    print(get_miniature_url(video_url))

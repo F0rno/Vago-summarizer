@@ -19,7 +19,7 @@ from utils import (
     read_file
 )
 from tools import *
-from youtube import extract_video_id, download_transcript
+from youtube import extract_video_id, download_transcript, get_miniature_url
 
 DEFAULT_SYSTEM_PROMPT_LOCAL = """
     You are an advanced AI assistant trained to convert video transcriptions into concise, well-structured Markdown notes. Your task is to take any given text, identify the essence, extract key points, and format it appropriately in Markdown. Here’s a structure on how to format the notes naturally:
@@ -37,15 +37,15 @@ DEFAULT_SYSTEM_PROMPT_LOCAL = """
 DEFAULT_OUTPUT_PATH = "./"
 
 def system_prompt(URL, VIDEO_ID):
-    # TODO: Implement the logic to get the url to the video thumbnail
+    thumbnail = get_miniature_url(URL)
     return f"""
-        You are an advanced AI assistant trained to convert video transcriptions into concise, well-structured Markdown notes. Your task is to take any given text, identify the essence, extract key points, and format it appropriately in Markdown. Here’s a structure on how to format the notes naturally:
+        You are an advanced AI assistant trained to convert video transcriptions into concise, well-structured Markdown notes (using headlines #, ##, ###). Your task is to take any given text, identify the essence, extract key points, and format it appropriately in Markdown. Here’s a structure on how to format the notes naturally:
 
-        Title
-            Use the video title or main idea as the main heading.
-            Include the video thumbnail image right under the main title using the provided URL template: ![Video Thumbnail]({URL}).
-        Sections and Subpoints
-            Organize the content into logical sections with level-2 headings. Each section should be accompanied by a timestamp link to the corresponding moment in the video using the format [Section Title](https://www.youtube.com/watch?v={VIDEO_ID}&t=9999s).
+        # Title (use the real one)
+            Use the video title or main idea as the main heading (#).
+            Include the video thumbnail image right under the main title (visible with ![](url) NOT a [](url)) using the provided URL template (use this for the preview, dont add text like a title): ![]({thumbnail}).
+        ### Sections (use the real one, not Section 1, 2, 3 ...) and Subpoints + (use the reals ones)
+            Organize the content into logical sections with level-2 headings. Each section should be accompanied by a timestamp link to the corresponding moment in the video using the format [topic Title](https://www.youtube.com/watch?v={VIDEO_ID}&t=9999s).
             Describe each section/subject in a small paragraph.
             Break down each section into bullet points, highlighting key ideas, important details, and notable quotes.
         Special Moments
